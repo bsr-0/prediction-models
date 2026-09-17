@@ -1,0 +1,65 @@
+name: Deploy site
+
+# Builds the hub site and deploys it to GitHub Pages via Actions. Nothing is
+# committed back to this repo: the finance site is pulled from bsr-0/finance-quant
+# at deploy time, and the NFL / March Madness sites live in this repo directly.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '30 13 * * *'   # daily — picks up the latest finance-quant site/ commit
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hub
+        uses: actions/checkout@v4
+
+      - name: Checkout finance-quant site
+        uses: actions/checkout@v4
+        with:
+          repository: bsr-0/finance-quant
+          sparse-checkout: site
+          sparse-checkout-cone-mode: false
+          path: _src_finance
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/finance
+          cp index.html .nojekyll _site/
+          rsync -a nfl/ _site/nfl/
+          rsync -a madness/ _site/madness/
+          rsync -a _src_finance/site/ _site/finance/
+          echo "Site size:"; du -sh _site
+          echo "Files over 5MB:"; find _site -type f -size +5M -exec ls -lh {} \; || true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

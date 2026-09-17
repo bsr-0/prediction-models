@@ -1,40 +1,33 @@
-# Sports Models Hub
+# Prediction Models Hub
 
-Single GitHub Pages UI integrating two independently-developed projects:
+Single GitHub Pages site combining three independently-developed projects:
 
-- [`nfl-player-projections`](https://github.com/bsr-0/nfl-player-projections)
-- [`march-madness-forecaster`](https://github.com/bsr-0/march-madness-forecaster)
+- [`nfl-player-projections`](https://github.com/bsr-0/nfl-player-projections) → `nfl/`
+- [`march-madness-forecaster`](https://github.com/bsr-0/march-madness-forecaster) → `madness/`
+- [`finance-quant`](https://github.com/bsr-0/finance-quant) → `finance/`
 
 ## How it works
 
-Each source repo owns its site: the model code writes `docs/` there, the
-project's tests cover it, and it is **not** deployed from the source repo.
-This hub is the only deployed site. A scheduled GitHub Actions workflow
-(`.github/workflows/sync-docs.yml`) pulls each repo's `docs/` and copies it to
-the same path it has in a local checkout:
+The site is deployed from GitHub Actions (`.github/workflows/deploy.yml`) on
+every push to `main`, daily on a schedule, and on-demand. The workflow
+assembles `_site/` and uploads it as a Pages artifact — nothing is committed
+back to this repo.
+
+- `nfl/` and `madness/` are the static sites (HTML/JS/CSS plus the JSON
+  payloads they load), maintained directly in this repo. Regenerate the
+  payloads with the source repos' scripts and copy them here.
+- `finance/` is pulled at deploy time from `finance-quant`'s committed `site/`
+  folder, which that repo's daily-predictions pipeline rebuilds.
+- `index.html` is the landing page linking to all three.
+
+## Local layout
 
 ```
-index.html                              # landing page
-madness/march-madness-forecaster/docs/  # synced copy of that repo's docs/ — do not edit here
-nfl/nfl-player-projections/docs/        # synced copy of that repo's docs/ — do not edit here
+index.html   # landing page
+nfl/         # NFL site (nfl/nfl-player-projections/ is the source repo, git-ignored)
+madness/     # March Madness site (madness/march-madness-forecaster/ is the source repo, git-ignored)
+finance/     # not present locally — assembled at deploy time
 ```
 
-Locally, `madness/march-madness-forecaster/` and `nfl/nfl-player-projections/`
-are full checkouts of the source repos, so the same links resolve on disk and
-on Pages. Those folders are ignored whole by this repo (`.gitignore`); the
-synced `docs/` copies are force-added by the workflow in CI.
-
-Runs every Tuesday at 13:00 UTC, or on-demand via the Actions tab
-("Sync sub-project docs" → Run workflow).
-
-Anything you put directly in a synced `docs/` folder will be deleted on the
-next sync (`rsync --delete`). Edit the source repos instead.
-
-## Setup (first time)
-
-1. Push this folder to GitHub as e.g. `sports-models-hub`.
-2. Settings → Pages → Source: deploy from branch `main`, folder `/ (root)`.
-3. Settings → Actions → General → Workflow permissions → set to
-   "Read and write permissions" (required for the sync workflow to push).
-4. Run the workflow once manually (Actions tab) to populate the two `docs/`
-   folders — until then the landing page links will 404.
+The source repos are cloned alongside the site folders for convenience but are
+excluded from this repo via `.gitignore`.
