@@ -31,22 +31,28 @@ jobs:
           sparse-checkout-cone-mode: false
           path: _src_madness
 
+      # Each project's site lands at the SAME path it has in a local checkout
+      # of this hub (madness/march-madness-forecaster/docs/, nfl/nfl-player-
+      # projections/docs/), so index.html's links work on disk and on Pages
+      # alike. Only docs/ is copied: the model code stays in the source repos.
       - name: Sync into hub folders
         run: |
-          rsync -a --delete _src_nfl/docs/ nfl/
-          rsync -a --delete _src_madness/docs/ madness/
+          mkdir -p nfl/nfl-player-projections madness/march-madness-forecaster
+          rsync -a --delete _src_nfl/docs/ nfl/nfl-player-projections/docs/
+          rsync -a --delete _src_madness/docs/ madness/march-madness-forecaster/docs/
           rm -rf _src_nfl _src_madness
 
       - name: Warn on large files (informational only, does not block push)
         run: |
           echo "Files over 5MB in synced output:"
-          find nfl madness -type f -size +5M -exec ls -lh {} \; || true
+          find nfl/nfl-player-projections/docs madness/march-madness-forecaster/docs -type f -size +5M -exec ls -lh {} \; || true
 
       - name: Commit if changed
         run: |
           git config user.name "docs-sync-bot"
           git config user.email "actions@github.com"
-          git add nfl madness
+          # -f: the parent folders are ignored (see .gitignore); only docs/ is wanted.
+          git add -f nfl/nfl-player-projections/docs madness/march-madness-forecaster/docs
           if git diff --cached --quiet; then
             echo "No changes."
             exit 0

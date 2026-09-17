@@ -4,7 +4,11 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Independent git repos living alongside this hub — not part of this repo
+# Independent git repos living alongside this hub — not part of this repo.
+# Ignored whole: a `dir/*` + `!dir/docs/` pair made `git add -A` record the
+# nested repos as embedded gitlinks. The hub tracks only each project's built
+# site, which the sync workflow copies to <project>/docs/ and adds with
+# `git add -f` in CI (where those folders are not nested repos).
 finance-quant/
 madness/march-madness-forecaster/
 nfl/nfl-player-projections/
