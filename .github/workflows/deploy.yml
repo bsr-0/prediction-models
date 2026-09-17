@@ -1,9 +1,13 @@
 name: Deploy site
 
-# Assembles the hub site from the three source repos and deploys it to GitHub
+# Assembles the hub site from the two source repos and deploys it to GitHub
 # Pages via Actions. Nothing is committed back to this repo: each project's
 # site lives in its own repo (docs/ or site/) and is pulled at deploy time.
 # Mirrors scripts/build.sh, which does the same from the local sibling checkouts.
+#
+# Triggers: push to main, or a manual run from the Actions tab. Nothing runs
+# on a schedule and no source repo triggers this automatically; after pushing
+# new data to a source repo, run this workflow by hand to publish it.
 
 on:
   push:
@@ -42,17 +46,9 @@ jobs:
           sparse-checkout-cone-mode: false
           path: _src/madness
 
-      - name: Checkout finance-quant site
-        uses: actions/checkout@v4
-        with:
-          repository: bsr-0/finance-quant
-          sparse-checkout: site
-          sparse-checkout-cone-mode: false
-          path: _src/finance
-
       - name: Assemble site
         run: |
-          scripts/build.sh _src/nfl/docs _src/madness/docs _src/finance/site
+          scripts/build.sh _src/nfl/docs _src/madness/docs
           echo "Site size:"; du -sh _site
           echo "Files over 5MB:"; find _site -type f -size +5M -exec ls -lh {} \; || true
 
