@@ -2,32 +2,35 @@
 
 Single GitHub Pages site combining three independently-developed projects:
 
-- [`nfl-player-projections`](https://github.com/bsr-0/nfl-player-projections) → `nfl/`
-- [`march-madness-forecaster`](https://github.com/bsr-0/march-madness-forecaster) → `madness/`
-- [`finance-quant`](https://github.com/bsr-0/finance-quant) → `finance/`
+| Path        | Source repo                                                                  | Folder  |
+|-------------|------------------------------------------------------------------------------|---------|
+| `/nfl/`     | [`nfl-player-projections`](https://github.com/bsr-0/nfl-player-projections)   | `docs/` |
+| `/madness/` | [`march-madness-forecaster`](https://github.com/bsr-0/march-madness-forecaster) | `docs/` |
+| `/finance/` | [`finance-quant`](https://github.com/bsr-0/finance-quant)                     | `site/` |
+
+Live at https://bsr-0.github.io/prediction-models/
 
 ## How it works
 
-The site is deployed from GitHub Actions (`.github/workflows/deploy.yml`) on
-every push to `main`, daily on a schedule, and on-demand. The workflow
-assembles `_site/` and uploads it as a Pages artifact — nothing is committed
-back to this repo.
+This repo holds only the landing page and the deploy workflow. Each project's
+site is maintained in its own repo; `.github/workflows/deploy.yml` sparse-checks
+out those folders, runs `scripts/build.sh` to assemble `_site/`, and deploys it
+as a Pages artifact. Nothing is committed back here.
 
-- `nfl/` and `madness/` are the static sites (HTML/JS/CSS plus the JSON
-  payloads they load), maintained directly in this repo. Regenerate the
-  payloads with the source repos' scripts and copy them here.
-- `finance/` is pulled at deploy time from `finance-quant`'s committed `site/`
-  folder, which that repo's daily-predictions pipeline rebuilds.
-- `index.html` is the landing page linking to all three.
+Deploys run on every push to `main` and on-demand (Actions → "Deploy site" →
+Run workflow). After pushing new data to a source repo, trigger a manual run
+to publish it.
 
-## Local layout
+## Local preview
+
+The source repos are cloned as siblings (git-ignored here):
 
 ```
-index.html   # landing page
-nfl/         # NFL site (nfl/nfl-player-projections/ is the source repo, git-ignored)
-madness/     # March Madness site (madness/march-madness-forecaster/ is the source repo, git-ignored)
-finance/     # not present locally — assembled at deploy time
+nfl/nfl-player-projections/
+madness/march-madness-forecaster/
+finance-quant/
 ```
 
-The source repos are cloned alongside the site folders for convenience but are
-excluded from this repo via `.gitignore`.
+```
+scripts/build.sh && python3 -m http.server -d _site 8000
+```

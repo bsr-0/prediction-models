@@ -1,8 +1,9 @@
 name: Deploy site
 
-# Builds the hub site and deploys it to GitHub Pages via Actions. Nothing is
-# committed back to this repo: the finance site is pulled from bsr-0/finance-quant
-# at deploy time, and the NFL / March Madness sites live in this repo directly.
+# Assembles the hub site from the three source repos and deploys it to GitHub
+# Pages via Actions. Nothing is committed back to this repo: each project's
+# site lives in its own repo (docs/ or site/) and is pulled at deploy time.
+# Mirrors scripts/build.sh, which does the same from the local sibling checkouts.
 
 on:
   push:
@@ -25,21 +26,33 @@ jobs:
       - name: Checkout hub
         uses: actions/checkout@v4
 
+      - name: Checkout nfl-player-projections docs
+        uses: actions/checkout@v4
+        with:
+          repository: bsr-0/nfl-player-projections
+          sparse-checkout: docs
+          sparse-checkout-cone-mode: false
+          path: _src/nfl
+
+      - name: Checkout march-madness-forecaster docs
+        uses: actions/checkout@v4
+        with:
+          repository: bsr-0/march-madness-forecaster
+          sparse-checkout: docs
+          sparse-checkout-cone-mode: false
+          path: _src/madness
+
       - name: Checkout finance-quant site
         uses: actions/checkout@v4
         with:
           repository: bsr-0/finance-quant
           sparse-checkout: site
           sparse-checkout-cone-mode: false
-          path: _src_finance
+          path: _src/finance
 
       - name: Assemble site
         run: |
-          mkdir -p _site/finance
-          cp index.html .nojekyll _site/
-          rsync -a nfl/ _site/nfl/
-          rsync -a madness/ _site/madness/
-          rsync -a _src_finance/site/ _site/finance/
+          scripts/build.sh _src/nfl/docs _src/madness/docs _src/finance/site
           echo "Site size:"; du -sh _site
           echo "Files over 5MB:"; find _site -type f -size +5M -exec ls -lh {} \; || true
 
