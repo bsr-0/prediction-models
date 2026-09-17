@@ -1,0 +1,55 @@
+name: Sync sub-project docs
+
+on:
+  schedule:
+    - cron: '0 13 * * 2'   # Tuesdays 1pm UTC — after the weekly NFL refresh
+  workflow_dispatch: {}     # manual "Run workflow" button
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hub repo
+        uses: actions/checkout@v4
+
+      - name: Checkout nfl-player-projections docs
+        uses: actions/checkout@v4
+        with:
+          repository: bsr-0/nfl-player-projections
+          sparse-checkout: docs
+          sparse-checkout-cone-mode: false
+          path: _src_nfl
+
+      - name: Checkout march-madness-forecaster docs
+        uses: actions/checkout@v4
+        with:
+          repository: bsr-0/march-madness-forecaster
+          sparse-checkout: docs
+          sparse-checkout-cone-mode: false
+          path: _src_madness
+
+      - name: Sync into hub folders
+        run: |
+          rsync -a --delete _src_nfl/docs/ nfl/
+          rsync -a --delete _src_madness/docs/ madness/
+          rm -rf _src_nfl _src_madness
+
+      - name: Warn on large files (informational only, does not block push)
+        run: |
+          echo "Files over 5MB in synced output:"
+          find nfl madness -type f -size +5M -exec ls -lh {} \; || true
+
+      - name: Commit if changed
+        run: |
+          git config user.name "docs-sync-bot"
+          git config user.email "actions@github.com"
+          git add nfl madness
+          if git diff --cached --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+          git commit -m "Sync docs from source repos ($(date -u +%Y-%m-%d))"
+          git push

@@ -1,0 +1,63 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Independent git repos living alongside this hub — not part of this repo
+finance-quant/
+madness/march-madness-forecaster/
+nfl/nfl-player-projections/
+prediction-core-main/
+
+# Python / Node environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+node_modules/
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Data files and model artifacts (keep the repo lightweight — regenerate, don't commit)
+*.csv
+*.csv.gz
+*.tsv
+*.parquet
+*.feather
+*.arrow
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.pt
+*.pth
+*.onnx
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+
+# Archives and large media
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+*.mp4
+*.mov
+*.avi
+*.psd
+
+# Logs and secrets
+*.log
+.env
+.env.*
+!.env.example
