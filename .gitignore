@@ -13,6 +13,14 @@ finance-quant/
 madness/march-madness-forecaster/
 nfl/nfl-player-projections/
 prediction-core-main/
+# Same nested repos at their local checkout paths (siblings of this hub).
+march-madness-forecaster/
+nfl-player-projections/
+prediction-core/
+# Local scratch: content-addressed blob store, its manifests, and OOF snapshots.
+blobs/
+manifests/
+nfl-oof-snapshot-*/
 
 # Python / Node environments and caches
 .venv/
